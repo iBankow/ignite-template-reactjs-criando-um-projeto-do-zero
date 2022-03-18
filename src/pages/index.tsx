@@ -1,10 +1,11 @@
-import next, { GetStaticProps } from 'next';
+import { GetStaticProps } from 'next';
 import Link from 'next/link';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import Prismic from '@prismicio/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import ptBR from 'date-fns/locale/pt-BR';
+import Head from 'next/head';
 import Header from '../components/Header';
 import { getPrismicClient } from '../services/prismic';
 
@@ -23,6 +24,7 @@ interface Post {
 
 interface PostPagination {
   next_page: string;
+  page?: number;
   results: Post[];
 }
 
@@ -49,9 +51,10 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
 
   async function handleNextPage(): Promise<void> {
-    if (nextPage === null) {
+    if (currentPage !== 1 && nextPage === null) {
       return;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postResults: any = await fetch(`${nextPage}`).then(response => {
       response.json();
     });
@@ -81,6 +84,9 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
   return (
     <>
+      <Head>
+        <title>Home | spacetraveling</title>
+      </Head>
       <main className={commonStyles.container}>
         <Header />
         <div className={styles.posts}>
@@ -104,9 +110,11 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
               </Link>
             );
           })}
-          <button type="button" onClick={handleNextPage}>
-            Carregar mais posts
-          </button>
+          {nextPage && (
+            <button type="button" onClick={handleNextPage}>
+              Carregar mais posts
+            </button>
+          )}
         </div>
       </main>
     </>
